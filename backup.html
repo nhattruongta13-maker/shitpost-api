@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>This ends now</title>
+        <style>
+            body{
+                background: #0a0a0a;
+                color: #e0e0e0;
+                font-family: system-ui;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 0;
+                padding: 40px 20px;
+            }
+            .container{
+                width: 600px;
+            }
+            h1{
+                color: #fff;
+                border-bottom: 1px solid #333;
+                padding-bottom: 10px;
+            }
+            .post{
+                background: #1a1a1a;
+                border: 1px solid red;
+                padding: 16px;
+                margin-bottom: 12px;
+                border-radius: 8px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Everything starts now</h1>
+            <div class="post">
+                <p>One small mistake then I'm gone</p>
+            </div>
+
+            <div class="post">
+                <p>Help me!! This is way too tempting. Hi there</p>
+            </div>
+
+            <div id="new-post">
+                <textarea id="post-text" placeholder="What's this?"></textarea>
+                <button id="post-btn">post</button>
+            </div>
+        </div>
+        <script>
+            window.onload = function() {
+                let savedPosts = localStorage.getItem('shitPosts');
+                if (savedPosts) {
+                    document.querySelector('.container').innerHTML = savedPosts;
+                    document.getElementById('post-btn').onclick = addPost;
+                }
+            }
+            function addPost(){
+                let text = document.getElementById('post-text').value;
+                if (text === '') return;
+
+                let newDiv = document.createElement('div');
+                newDiv.className = 'post';
+                newDiv.innerHTML = '<p>' + text + '</p>';
+
+                let container = document.querySelector('.container');
+                let form = document.getElementById('new-post');
+
+                container.insertBefore(newDiv, form);
+
+                document.getElementById('post-text').value = '';
+
+                saveAllPosts();
+            }
+
+            function saveAllPosts(){
+                let containerHTML = document.querySelector('.container').innerHTML;
+                localStorage.setItem('shitPosts', containerHTML);
+            }
+            document.getElementById('post-btn').onclick = addPost;
+        </script>
+    </body>
+</html>
