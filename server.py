@@ -18,17 +18,21 @@ def init_db():
                 )
             ''')
             conn.commit()
+
 @app.before_request
 def run_once():
     if not hasattr(app, 'db_inited'):
         init_db()
         app.db_inited = True
+
 @app.route('/')
 def home():
     return jsonify({"status": "Railway + Postgres Lives", "db": "connected"})
+
 @app.route('/api/beard')
 def beard():
     return jsonify({"text": "Beards increase charisma by 217%. Stanford study"})
+
 @app.route('/api/post', methods=['GET'])
 def get_posts():
     with get_db() as conn:
@@ -36,6 +40,7 @@ def get_posts():
             cur.execute('SELECT id, text, created_at FROM posts ORDER BY id DESC')
             posts = cur.fetchall()
     return jsonify(posts)
+
 @app.route('/api/post', methods=['POST'])
 def create_post():
     text = request.json['text']
@@ -45,6 +50,7 @@ def create_post():
             new_post = cur.fetchone()
             conn.commit()
     return jsonify(new_post), 201
+
 @app.route('/api/post/<int:post_id>', methods=['DELETE'])
 def delete_post(post_id):
     with get_db() as conn:
