@@ -1,33 +1,16 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import os
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import db  # <-- Import our new db module
+
 app = Flask(__name__)
 CORS(app)
-def get_db():
-    return psycopg2.connect(os.getenv('DATABASE_URL'), cursor_factory=RealDictCursor)
-def init_db():
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute('''
-                CREATE TABLE IF NOT EXISTS posts (
-                    id SERIAL PRIMARY KEY,
-                    text TEXT NOT NULL,
-                    created_at TIMESTAMP DEFAULT NOW()
-                )
-            ''')
-            conn.commit()
 
-@app.before_request
-def run_once():
-    if not hasattr(app, 'db_inited'):
-        init_db()
-        app.db_inited = True
+# Run migrations once on startup
+db.run_migrations()
 
 @app.route('/')
 def home():
-    return jsonify({"status": "Railway + Postgres Lives", "db": "connected"})
+    return jsonify({"status": "Railway + Postgres Lives", "db": "separated"})
 
 @app.route('/api/beard')
 def beard():
@@ -35,28 +18,19 @@ def beard():
 
 @app.route('/api/post', methods=['GET'])
 def get_posts():
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute('SELECT id, text, created_at FROM posts ORDER BY id DESC')
-            posts = cur.fetchall()
+    posts = db.get_all_posts()  # <-- No SQL here
     return jsonify(posts)
 
 @app.route('/api/post', methods=['POST'])
 def create_post():
     text = request.json['text']
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute('INSERT INTO posts (text) VALUES (%s) RETURNING id, text, created_at', (text,))
-            new_post = cur.fetchone()
-            conn.commit()
+    new_post = db.create_post(text)  # <-- No SQL here
     return jsonify(new_post), 201
 
 @app.route('/api/post/<int:post_id>', methods=['DELETE'])
 def delete_post(post_id):
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute('DELETE FROM posts WHERE id = %s', (post_id,))
-            conn.commit()
+    db.delete_post(post_id)  # <-- No SQL here
     return '', 204
-if __name__ == '__main__':
+
+if __name__ == '_main_':
     app.run()
