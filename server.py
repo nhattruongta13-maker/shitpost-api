@@ -7,17 +7,22 @@ app = Flask(__name__)
 CORS(app)
 def get_db():
     return psycopg2.connect(os.getenv('DATABASE_URL'), cursor_factory=RealDictCursor)
-# Create table on startup
-with get_db() as conn:
-    with conn.cursor() as cur:
-        cur.execute('''
-            CREATE TABLE IF NOT EXISTS posts (
-                id SERIAL PRIMARY KEY,
-                text TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT NOW()
-            )
-        ''')
-        conn.commit()
+def init_db():
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute('''
+                CREATE TABLE IF NOT EXISTS posts (
+                    id SERIAL PRIMARY KEY,
+                    text TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT NOW()
+                )
+            ''')
+            conn.commit()
+@app.before_request
+def run_once():
+    if not hasattr(app, 'db_inited'):
+        init_db()
+        app.db_inited = True
 @app.route('/')
 def home():
     return jsonify({"status": "Railway + Postgres Lives", "db": "connected"})
