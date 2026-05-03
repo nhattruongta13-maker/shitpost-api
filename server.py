@@ -1,12 +1,20 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import db  # <-- Import our new db module
+from db import db  # <-- Import our new db module
+import os
+from models import User
 
 app = Flask(__name__)
 CORS(app)
 
-# Run migrations once on startup
-db.run_migrations()
+
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL').replace("postgres://", "postgresql://", 1)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()
 
 @app.route('/')
 def home():
