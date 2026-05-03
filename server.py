@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from db import db  # <-- Import our new db module
 import os
-from models import User
+
 
 app = Flask(__name__)
 CORS(app)
@@ -12,7 +12,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL').replace("postg
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
-
+from models import User
 with app.app_context():
     db.create_all()
 
