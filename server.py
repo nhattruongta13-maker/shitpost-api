@@ -90,7 +90,7 @@ def login():
         'exp': datetime.now(timezone.utc) + timedelta(hours=24)
     }, app.config['SECRET_KEY'], algorithm='HS256')
 
-    return {"token": token.decode('utf-8')}
+    return {"token": token}
 
 def token_required(f):
     @wraps(f)
