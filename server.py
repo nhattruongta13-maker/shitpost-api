@@ -4,7 +4,7 @@ from db import db  # <-- Import our new db module
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import wraps
 
 
@@ -86,10 +86,11 @@ def login():
     
     token = jwt.encode({
         'user_id': user.id,
-        'exp': datetime.now() + timedelta(hours=24)
+        'iat': datetime.now(timezone.utc),
+        'exp': datetime.now(timezone.utc) + timedelta(hours=24)
     }, app.config['SECRET_KEY'], algorithm='HS256')
 
-    return {"token": token}
+    return {"token": token.decode('utf-8')}
 
 def token_required(f):
     @wraps(f)
